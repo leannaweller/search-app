@@ -1,90 +1,82 @@
-/**
- * @flow
- */
 import React, { Component } from 'react'
 import {
   StyleSheet,
   Text,
   View,
-  ActivityIndicator,
-  AsyncStorage
+  ActivityIndicator
 } from 'react-native'
 import Api from '../Api'
 import Masonry from 'react-native-masonry'
 import {mapImages} from '../Utils'
+import styles from './Styles/SearchResultScreenStyle'
 
 export default class Root extends Component {
   constructor (props) {
     super(props)
     this.state = {
       items: [],
-      loading: false
+      loading: false,
+      error: null
     }
   }
 
   static navigationOptions = {
-    title: 'Search App',
-    headerStyle:{ backgroundColor: 'white'},
-    headerTitleStyle:{ color: '#00897b'},
-  }
-
-  getData = () => {
-    
-  }
-
-  componentWillReceiveProps (nextProps) {
-    const {rows, term} = this.props
-    if (nextProps.rows !== rows || nextProps.term !== term) {
-      this.getData()
-    }
+    header: null
   }
 
   async componentDidMount () {
+    console.log(this.props)
     try {
-      console.log('CHECK FILE SYSTEM')
-      const term = 'cats'
-      this.setState({loading: true})
-      const persistedRes = await AsyncStorage.getItem(term)
-      console.log('CHECKED')
-      // if (persistedRes) {
-      //   console.log('PERSISTED')
-      //   this.setState({loading: false, items: persistedRes})
-      // } else {
-      //   console.log('NOT PERSISTED')
-      //   const res = await Api.search(term)
-      //   const items = mapImages(res)
-      //   await AsyncStorage.setItem(term, items)
-      //   this.setState({loading: false, items})
-      // }
+      const {term} = this.props.navigation.state.params
+      this.setState({loading: true, error: null, emptyPlaceholder: null})
+      const res = await Api.search(term)
+      if (res.status < 300) {
+        const items = await mapImages(res.data.items)
+        this.setState({loading: false, items})
+      } else {
+        this.setState({loading: false, error: 'Error occured...'})
+      }
     } catch (e) {
       console.log(e)
-      this.setState({loading: false})
+      this.setState({loading: false, error: 'Error occured...'})
     }
   }
 
   render () {
-    console.log(this.state.items)
+    const {loading, items, error} = this.state
+    const {columns} = this.props.navigation.state.params
+    const style = {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0
+    }
     return (
       <View style={styles.container}>
         {
-          !this.state.loading ?
-          <Masonry
-            columns={2}
-            bricks={this.state.items}
-          />
-          :
-          <ActivityIndicator size='large' />
+          !loading
+            ? <View>
+              {
+                !error
+                ? <View>
+                  {
+                    items.length ? <Masonry
+                      columns={columns}
+                      bricks={items}
+                      spacing={2}
+                      imageContainerStyle={style}
+                      customImageProps={{resizeMode: 'contain'}}
+                    />
+                  : <Text style={styles.text}>Nothing found...</Text>
+                  }
+                </View>
+              : <Text style={styles.text}>{error}</Text>
+              }
+            </View>
+          : <ActivityIndicator size='large' />
         }
-
       </View>
     )
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
-  }
-})

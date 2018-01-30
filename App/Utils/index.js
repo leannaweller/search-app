@@ -1,5 +1,6 @@
 import {Dimensions} from 'react-native'
-
+import validUrl from 'valid-url'
+import axios from 'axios'
 const { width, height } = Dimensions.get('window')
 
 const screenWidth = width < height ? width : height
@@ -10,11 +11,25 @@ export const Metrics = {
   screenWidth
 }
 
-export const mapImages = (res) => {
-  return res.data.items.map((el, i) => {
-    return {id: i, uri: el.link}
+const isValidResource = async (link) => {
+  try {
+    if (!validUrl.isUri(link)) return
+    const res = await axios.get(link)
+    if (res && res.headers['content-type'] && res.headers['content-type'].includes('image/') && res.status < 300) {
+      return link
+    }
+  } catch (e) {
+    console.log(e)
   }
-  )
+}
+
+export const mapImages = async (items, checkLinks = true) => {
+  if (checkLinks) {
+    const checkedLinks = await Promise.all(items.map(el => isValidResource(el.link)))
+    return checkedLinks.filter(el => el).map(el => ({uri: el}))
+  } else {
+    return items.filter(el => validUrl.isUri(el.link)).map(el => ({uri: el.link}))
+  }
 }
 
 export default {

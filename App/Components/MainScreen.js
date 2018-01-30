@@ -1,34 +1,49 @@
-/**
- * @flow
- */
 import React, { Component } from 'react'
 import {
-  StyleSheet,
   Text,
   TextInput,
   View,
   Slider,
-  TouchableHighlight
+  TouchableHighlight,
+  Keyboard
 } from 'react-native'
-import {Metrics} from '../Utils'
+import styles from './Styles/MainScreenStyles'
 
 export default class Root extends Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      columns: 1,
+      term: ''
+    }
+  }
   static navigationOptions = {
     title: 'Search App',
     headerStyle:{ backgroundColor: 'white'},
     headerTitleStyle:{ color: '#00897b'},
   }
   handlePress = () => {
+    const {term, columns} = this.state
     const { navigate } = this.props.navigation
-    navigate('Search')
+    navigate('Search', {term, columns})
+    this.setState({columns: 1, term: ''})
+    Keyboard.dismiss()
+  }
+  handleInputChange = (e) => {
+    this.setState({term: e})
+  }
+
+  handleSliderChange = (e) => {
+    this.setState({columns: e})
   }
   render () {
+    const {term, columns} = this.state
     return (
       <View style={styles.container}>
         <View style={styles.form}>
           <View style={styles.field}>
             <Text style={styles.textLabel}>Search term:</Text>
-            <TextInput style={styles.textInput} />
+            <TextInput style={styles.textInput} onChangeText={this.handleInputChange} value={term}/>
           </View>
           <View style={styles.field}>
             <Text style={styles.label}>Columns:</Text>
@@ -36,8 +51,10 @@ export default class Root extends Component {
             style={styles.slider}
             minimumValue={1}
             maximumValue={5}
-            step={1} />
-            <Text>2</Text>
+            step={1}
+            value={columns}
+            onValueChange={this.handleSliderChange}/>
+          <Text>{columns}</Text>
           </View>
           <View style={styles.field}>
             <TouchableHighlight
@@ -52,41 +69,3 @@ export default class Root extends Component {
     )
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  field: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 10
-  },
-  form: {
-    width: Metrics.screenWidth * 0.8,
-    padding: 10
-  },
-  textInput: {
-    width: 100,
-    marginRight: 5
-  },
-  textLabel: {
-    fontSize: 15,
-    lineHeight: 45,
-    marginRight: 5
-  },
-  label: {
-    fontSize: 15
-  },
-  slider: {
-    width: 100
-  },
-  button: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: '#00897b',
-    borderRadius: 10
-  }
-})
