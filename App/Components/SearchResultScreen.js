@@ -3,7 +3,8 @@ import {
   StyleSheet,
   Text,
   View,
-  ActivityIndicator
+  ActivityIndicator,
+  AsyncStorage
 } from 'react-native'
 import Api from '../Api'
 import Masonry from 'react-native-masonry'
@@ -31,12 +32,20 @@ export default class Root extends Component {
     try {
       const {term} = this.props.navigation.state.params
       this.setState({loading: true, error: null, emptyPlaceholder: null})
-      const res = await Api.search(term)
-      if (res.status < 300) {
-        const items = await mapImages(res.data.items)
-        this.setState({loading: false, items})
+      const persistedItems = await AsyncStorage.getItem(term)
+      if (persistedItems) {
+        this.setState({loading: false, items: JSON.parse(persistedItems)})
       } else {
-        this.setState({loading: false, error: errorText})
+        const res = await Api.search(term)
+        if (res.status < 300) {
+          const items = await mapImages(res.data.items)
+          this.setState({loading: false, items})
+          if (items.length) {
+            await AsyncStorage.setItem(term, JSON.stringify(items))
+          }
+        } else {
+          this.setState({loading: false, error: errorText})
+        }
       }
     } catch (e) {
       console.log(e)
