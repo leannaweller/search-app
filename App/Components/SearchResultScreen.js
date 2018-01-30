@@ -21,11 +21,13 @@ export default class Root extends Component {
   }
 
   static navigationOptions = {
-    header: null
+    title: 'Search App',
+    headerStyle:{ backgroundColor: 'white'},
+    headerTitleStyle:{ color: '#00897b'},
   }
 
   async componentDidMount () {
-    console.log(this.props)
+    const errorText = 'Error occured...'
     try {
       const {term} = this.props.navigation.state.params
       this.setState({loading: true, error: null, emptyPlaceholder: null})
@@ -34,11 +36,11 @@ export default class Root extends Component {
         const items = await mapImages(res.data.items)
         this.setState({loading: false, items})
       } else {
-        this.setState({loading: false, error: 'Error occured...'})
+        this.setState({loading: false, error: errorText})
       }
     } catch (e) {
       console.log(e)
-      this.setState({loading: false, error: 'Error occured...'})
+      this.setState({loading: false, error: errorText})
     }
   }
 

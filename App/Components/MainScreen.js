@@ -5,7 +5,9 @@ import {
   View,
   Slider,
   TouchableHighlight,
-  Keyboard
+  Keyboard,
+  Alert,
+  TouchableWithoutFeedback
 } from 'react-native'
 import styles from './Styles/MainScreenStyles'
 
@@ -25,12 +27,20 @@ export default class Root extends Component {
   handlePress = () => {
     const {term, columns} = this.state
     const { navigate } = this.props.navigation
-    navigate('Search', {term, columns})
-    this.setState({columns: 1, term: ''})
-    Keyboard.dismiss()
+    this.hideKeyboard()
+    if (!term) {
+      Alert.alert('Missing search term', 'Please, fill search term!')
+    } else {
+      navigate('Search', {term, columns})
+      this.setState({columns: 1, term: ''})
+    }
   }
   handleInputChange = (e) => {
     this.setState({term: e})
+  }
+
+  hideKeyboard () {
+    Keyboard.dismiss()
   }
 
   handleSliderChange = (e) => {
@@ -40,31 +50,33 @@ export default class Root extends Component {
     const {term, columns} = this.state
     return (
       <View style={styles.container}>
-        <View style={styles.form}>
-          <View style={styles.field}>
-            <Text style={styles.textLabel}>Search term:</Text>
-            <TextInput style={styles.textInput} onChangeText={this.handleInputChange} value={term}/>
+        <TouchableWithoutFeedback onPress={this.hideKeyboard}>
+          <View style={styles.form}>
+            <View style={styles.field}>
+              <Text style={styles.textLabel}>Search term:</Text>
+              <TextInput style={styles.textInput} onChangeText={this.handleInputChange} value={term}/>
+            </View>
+            <View style={styles.field}>
+              <Text style={styles.label}>Columns:</Text>
+              <Slider
+              style={styles.slider}
+              minimumValue={1}
+              maximumValue={5}
+              step={1}
+              value={columns}
+              onValueChange={this.handleSliderChange}/>
+            <Text style={styles.sliderText}>{columns}</Text>
+            </View>
+            <View style={styles.field}>
+              <TouchableHighlight
+                style={styles.button}
+                onPress={this.handlePress}
+              >
+                <Text style={styles.buttonText}> Search </Text>
+              </TouchableHighlight>
+            </View>
           </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>Columns:</Text>
-            <Slider
-            style={styles.slider}
-            minimumValue={1}
-            maximumValue={5}
-            step={1}
-            value={columns}
-            onValueChange={this.handleSliderChange}/>
-          <Text>{columns}</Text>
-          </View>
-          <View style={styles.field}>
-            <TouchableHighlight
-              style={styles.button}
-              onPress={this.handlePress}
-            >
-              <Text> Search </Text>
-            </TouchableHighlight>
-          </View>
-        </View>
+        </TouchableWithoutFeedback>
       </View>
     )
   }
