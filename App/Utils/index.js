@@ -23,7 +23,7 @@ const isValidResource = async (link) => {
   }
 }
 
-export const mapImages = async (items, checkLinks = true) => {
+export const mapImages = async (items, checkLinks = false) => {
   if (checkLinks) {
     const checkedLinks = await Promise.all(items.map(el => isValidResource(el.link)))
     return checkedLinks.filter(el => el).map(el => ({uri: el}))

@@ -28,17 +28,20 @@ export default class Root extends Component {
   }
 
   async componentDidMount () {
+    console.log('MOUNT')
     const errorText = 'Error occured...'
     try {
       const {term} = this.props.navigation.state.params
       this.setState({loading: true, error: null, emptyPlaceholder: null})
       const persistedItems = await AsyncStorage.getItem(term)
-      if (persistedItems) {
+      console.log(persistedItems)
+      if (persistedItems && persistedItems.length) {
         this.setState({loading: false, items: JSON.parse(persistedItems)})
       } else {
         const res = await Api.search(term)
         if (res.status < 300) {
           const items = await mapImages(res.data.items)
+          console.log(items)
           this.setState({loading: false, items})
           if (items.length) {
             await AsyncStorage.setItem(term, JSON.stringify(items))
@@ -56,12 +59,8 @@ export default class Root extends Component {
   render () {
     const {loading, items, error} = this.state
     const {columns} = this.props.navigation.state.params
-    const style = {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      bottom: 0,
-      right: 0
+    const imageStyle = {
+      backgroundColor: 'lightgrey'
     }
     return (
       <View style={styles.container}>
@@ -76,7 +75,7 @@ export default class Root extends Component {
                       columns={columns}
                       bricks={items}
                       spacing={2}
-                      imageContainerStyle={style}
+                      imageContainerStyle={imageStyle}
                       customImageProps={{resizeMode: 'contain'}}
                     />
                   : <Text style={styles.text}>Nothing found...</Text>

@@ -15,7 +15,7 @@ export default class Root extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      columns: 1,
+      columns: 2,
       term: ''
     }
   }
@@ -32,7 +32,7 @@ export default class Root extends Component {
       Alert.alert('Missing search term', 'Please, fill search term!')
     } else {
       navigate('Search', {term, columns})
-      this.setState({columns: 1, term: ''})
+      this.setState({columns: 2, term: ''})
     }
   }
   handleInputChange = (e) => {
@@ -60,7 +60,7 @@ export default class Root extends Component {
               <Text style={styles.label}>Columns:</Text>
               <Slider
               style={styles.slider}
-              minimumValue={1}
+              minimumValue={2}
               maximumValue={5}
               step={1}
               value={columns}
